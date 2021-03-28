@@ -14,7 +14,10 @@ import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.Select;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Crawling {
 
@@ -27,7 +30,10 @@ public class Crawling {
     public static String WEB_DRIVER_ID = "webdriver.chrome.driver";
     public static String WEB_DRIVER_PATH = "C:/Users/tlmag/Desktop/workspace/CoffeeCrawlingJ/chromedriver.exe";
 
-    public void SeleniumTest() throws InterruptedException, IOException {
+    //매장 정보들을 저장할 해시맵
+    Map<String, ArrayList<String>> coffeeInfoms = new HashMap<>();
+
+    public void SeleniumTest() throws InterruptedException {
         //System Property SetUp
         System.setProperty(WEB_DRIVER_ID, WEB_DRIVER_PATH);
 
@@ -35,12 +41,24 @@ public class Crawling {
         ChromeOptions options = new ChromeOptions();
         options.setCapability("ignoreProtectedModeSettings", true);
         driver = new ChromeDriver(options);
-
-        url = "https://map.naver.com/v5/search/%EC%B9%B4%ED%8E%98?c=14140243.5138456,4523958.9602580,14,0,0,0,dh";
+        
+        
+        //네이버 지도
+        url = "https://map.naver.com/v5/";
         driver.get(url);
-        Thread.sleep(4000);
+        Thread.sleep(15000);
+        
+        //네이버 지도 검색창에 원하는 동명 입력 후 엔터
+        WebElement inputSearch = driver.findElement(By.className("input_search"));
+        String input = "종암동";
+        String inputKey = " 카페";
+        inputSearch.sendKeys(input+inputKey);
+        Thread.sleep(1000);
+        inputSearch.sendKeys(Keys.ENTER);
+        Thread.sleep(3000);
 
-        // 데이터가 iframe 안에 있는 경우(HTML 안 HTML) 이동
+
+//         데이터가 iframe 안에 있는 경우(HTML 안 HTML) 이동
         driver.switchTo().frame("searchIframe");
 
         // 원하는 요소를 찾기(스크롤할 창)
@@ -49,10 +67,10 @@ public class Crawling {
         Actions builder = new Actions(driver);
 
         //커서를 올리고 스크롤을 내리는 액션 체인 생성, 실행
-        for(int i = 0; i < 5; i++){
+        for(int i = 0; i < 6; i++){
             Actions hoverOverRegistrar = builder.sendKeys(scrollBox, Keys.END);
             hoverOverRegistrar.perform(); // 1초 간격 6번 실행
-            Thread.sleep(1000);
+            Thread.sleep(1500);
         }
 
         // 사이트에서 전체 매장을 찾은 뒤 코드를 읽는다
@@ -62,9 +80,34 @@ public class Crawling {
         for (WebElement e : elements){
             System.out.println(e.getText());
         }
-    }
 
-    public static void main(String[] args) throws InterruptedException, IOException {
+        //매장을 하나씩 클릭하고 주소를 읽는다
+        for(WebElement e : elements){
+            e.click();
+            Thread.sleep(2000);
+            driver.switchTo().parentFrame(); //부모 프레임으로 이동
+            driver.switchTo().frame(driver.findElement(By.id("entryIframe"))); //옆 iframe으로 이동
+
+            //주소
+            WebElement addEle = driver.findElement(By.className("_2yqUQ"));
+            System.out.println(addEle.getText());
+
+            //전화번호 있는 경우
+            try{
+                WebElement callEle = driver.findElement(By.className("_3ZA0S"));
+                System.out.println(callEle.getText());
+            } catch (Exception ex){
+                System.out.println(ex.toString());
+                //전화번호 정보 없는 경우 null처리
+            }
+
+
+
+            driver.switchTo().parentFrame(); //부모 프레임으로 이동
+            driver.switchTo().frame("searchIframe"); //원래 iframe으로 이동
+        }
+    }
+    public static void main(String[] args) throws InterruptedException {
         Crawling test = new Crawling();
         test.SeleniumTest();
 

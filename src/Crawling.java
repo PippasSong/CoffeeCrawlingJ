@@ -12,10 +12,10 @@ import org.openqa.selenium.support.ui.Select;
 
 import java.io.IOException;
 import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 
 public class Crawling {
 
@@ -30,6 +30,8 @@ public class Crawling {
 
     //매장 정보들을 저장할 해시맵
     Map<String, ArrayList<String>> coffeeInfoms = new HashMap<>();
+    ArrayList<String> temp = new ArrayList<>();
+
 
     public void SeleniumTest() throws InterruptedException {
         //System Property SetUp
@@ -117,7 +119,7 @@ public class Crawling {
 
             //메뉴정보를 저장할 문자열
             //메뉴와 가격은 ':', 메뉴 간은 ';'로 구분
-            String menuInfo = new String();
+            String menuInfo = "";
 
             try{
                 List<WebElement> menuEles = driver.findElements(By.className("_1q3GD"));
@@ -150,12 +152,63 @@ public class Crawling {
             driver.switchTo().frame("searchIframe"); //원래 iframe으로 이동
         }
     }
-    public static void main(String[] args) throws InterruptedException {
+
+    //db에 해시맵의 정보 업데이트
+    public void uploadDB(){
+        String driver = "oracle.jdbc.driver.OracleDriver";
+        String url = "jdbc:oracle:thin:@//localhost/xe";
+        Connection con = null;
+        PreparedStatement pstmt = null;
+        String query = "MERGE INTO T_CAFE A USING(SELECT NVL(MAX(CAFE_NAME), ' ') CAFE_NAME, NVL(MAX(CAFE_ADDRESS), ' ') CAFE_ADDRESS FROM T_CAFE WHERE CAFE_NAME=? AND CAFE_ADDRESS=?) B ON (A.CAFE_NAME = B.CAFE_NAME AND A.CAFE_ADDRESS = B.CAFE_ADDRESS) WHEN MATCHED THEN UPDATE SET CONTACT_NUMBER=?, MENU_INFO=?,"
+        +"UPDATED_DATETIME = SYSDATE, UPDATOR_ID=?, DELETED_YN=? WHEN NOT MATCHED THEN INSERT (CAFE_NAME, CAFE_ADDRESS, CONTACT_NUMBER, MENU_INFO, CREATED_DATETIME, CREATOR_ID, DELETED_YN) VALUES (?,?,?,?,SYSDATE,?,?)";
+
+
+        try{
+            Class.forName(driver); //드라이버 로딩
+            con = DriverManager.getConnection(url, "CAFE_MAN", "1234"); //DB연결
+            pstmt = con.prepareStatement(query);
+
+            Set set = coffeeInfoms.keySet();
+            Iterator iterator = set.iterator();
+            while(iterator.hasNext()){
+
+                String key = (String)iterator.next();
+                pstmt.setString(1, key);
+                pstmt.setString(2, coffeeInfoms.get(key).get(0));
+                pstmt.setString(3, coffeeInfoms.get(key).get(1));
+                pstmt.setString(4, coffeeInfoms.get(key).get(2));
+                pstmt.setString(5, "admin");
+                pstmt.setString(6, "N");
+                pstmt.setString(7, key);
+                pstmt.setString(8, coffeeInfoms.get(key).get(0));
+                pstmt.setString(9, coffeeInfoms.get(key).get(1));
+                pstmt.setString(10, coffeeInfoms.get(key).get(2));
+                pstmt.setString(11, "admin");
+                pstmt.setString(12, "N");
+
+                int cnt = pstmt.executeUpdate();
+            }
+        } catch(Exception e){
+            System.out.println(e.getMessage());
+        } finally {
+            try{
+                pstmt.close();
+                con.close();
+            } catch (Exception e2){
+                System.out.println(e2.getMessage());
+            }
+        }
+    }
+
+   public static void main(String[] args) throws InterruptedException {
         Crawling test = new Crawling();
         
         //크롤링
         test.SeleniumTest();
-        System.out.println(test.coffeeInfoms.get("스타벅스 종암DT점"));
+//        System.out.println(test.coffeeInfoms.get("스타벅스 종암DT점"));
+
+        //DB업데이트
+        test.uploadDB();
 
 //        try {
 //

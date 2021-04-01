@@ -33,7 +33,7 @@ public class Crawling {
     ArrayList<String> temp = new ArrayList<>();
 
 
-    public void SeleniumTest() throws InterruptedException {
+    public void crawlMap(String location) throws InterruptedException {
         //System Property SetUp
         System.setProperty(WEB_DRIVER_ID, WEB_DRIVER_PATH);
 
@@ -50,9 +50,8 @@ public class Crawling {
         
         //네이버 지도 검색창에 원하는 동명 입력 후 엔터
         WebElement inputSearch = driver.findElement(By.className("input_search"));
-        String input = "종암동";
         String inputKey = " 카페";
-        inputSearch.sendKeys(input+inputKey);
+        inputSearch.sendKeys(location +inputKey);
         Thread.sleep(1000);
         inputSearch.sendKeys(Keys.ENTER);
         Thread.sleep(3000);
@@ -204,7 +203,7 @@ public class Crawling {
         Crawling test = new Crawling();
         
         //크롤링
-        test.SeleniumTest();
+        test.crawlMap("종암동");
 //        System.out.println(test.coffeeInfoms.get("스타벅스 종암DT점"));
 
         //DB업데이트

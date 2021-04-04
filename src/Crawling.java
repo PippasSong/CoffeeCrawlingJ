@@ -134,7 +134,7 @@ public class Crawling {
                 List<WebElement> menuEles = driver.findElements(By.className("_3K2xG"));
                 List<WebElement> priceEles = driver.findElements(By.className("_3GJcI"));
                 for(int i = 0; i < menuEles.size(); i++){
-                    String temp = menuEles.get(i).getText() + "," + priceEles.get(i).getText() + ";";
+                    String temp = menuEles.get(i).getText() + ":" + priceEles.get(i).getText() + ";";
                     menuInfo = menuInfo + temp;
                 }
             } catch (Exception ex){

@@ -10,8 +10,9 @@ import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.Select;
 
-import java.io.IOException;
+import java.io.*;
 import java.lang.reflect.Array;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -31,6 +32,27 @@ public class Crawling {
     //매장 정보들을 저장할 해시맵
     Map<String, ArrayList<String>> coffeeInfoms = new HashMap<>();
     ArrayList<String> temp = new ArrayList<>();
+
+    public void txtReader(){
+        try{
+            //"."은 working directory 경로
+            FileInputStream file = new FileInputStream(".\\intrvl_seoul.txt");
+            //텍스트파일 인코딩은 MS949형식으로 되어있다.
+            InputStreamReader inputStreamReader = new InputStreamReader(file, "MS949");
+            //입력 버퍼 생성
+            BufferedReader br = new BufferedReader(inputStreamReader);
+            String line = "";
+            while((line = br.readLine()) != null){
+                System.out.println(line);
+            }
+            br.close();
+        } catch(FileNotFoundException e){
+            System.out.println("File not found");
+        } catch(IOException e){
+            System.out.println(e);
+        }
+
+    }
 
 
     public void crawlMap(String location) throws InterruptedException {
@@ -155,7 +177,8 @@ public class Crawling {
     //db에 해시맵의 정보 업데이트
     public void uploadDB(){
         String driver = "oracle.jdbc.driver.OracleDriver";
-        String url = "jdbc:oracle:thin:@//localhost/xe";
+        String url = "jdbc:oracle:thin:@//34.64.231.171/xe";
+//        String url = "jdbc:oracle:thin:@//localhost/xe";
         Connection con = null;
         PreparedStatement pstmt = null;
         String query = "MERGE INTO T_CAFE A USING(SELECT NVL(MAX(CAFE_NAME), ' ') CAFE_NAME, NVL(MAX(CAFE_ADDRESS), ' ') CAFE_ADDRESS FROM T_CAFE WHERE CAFE_NAME=? AND CAFE_ADDRESS=?) B ON (A.CAFE_NAME = B.CAFE_NAME AND A.CAFE_ADDRESS = B.CAFE_ADDRESS) WHEN MATCHED THEN UPDATE SET CONTACT_NUMBER=?, MENU_INFO=?,"
@@ -164,7 +187,8 @@ public class Crawling {
 
         try{
             Class.forName(driver); //드라이버 로딩
-            con = DriverManager.getConnection(url, "CAFE_MAN", "1234"); //DB연결
+            con = DriverManager.getConnection(url, "COFFEE_IDX", "onestar21"); //DB연결
+//            con = DriverManager.getConnection(url, "CAFE_MAN", "1234"); //DB연결
             pstmt = con.prepareStatement(query);
 
             Set set = coffeeInfoms.keySet();
@@ -201,13 +225,22 @@ public class Crawling {
 
    public static void main(String[] args) throws InterruptedException {
         Crawling test = new Crawling();
+        //텍스트 파일 읽기
+        test.txtReader();
         
         //크롤링
-        test.crawlMap("종암동");
+//        test.crawlMap("종암동");
 //        System.out.println(test.coffeeInfoms.get("스타벅스 종암DT점"));
 
         //DB업데이트
-        test.uploadDB();
+//        test.uploadDB();
+
+
+
+
+
+
+
 
 //        try {
 //

@@ -33,6 +33,9 @@ public class Crawling {
     Map<String, ArrayList<String>> coffeeInfoms = new HashMap<>();
     ArrayList<String> temp = new ArrayList<>();
 
+    //중복 제거한 도로명이 담긴 리스트
+    ArrayList<String> roadNameList = new ArrayList<>();
+
     public void txtReader(){
         try{
             //"."은 working directory 경로
@@ -44,6 +47,12 @@ public class Crawling {
             String line = "";
             while((line = br.readLine()) != null){
                 System.out.println(line);
+                String[] lineAry = line.split("\\|");
+
+                if(!roadNameList.contains(lineAry[10])){
+                    roadNameList.add(lineAry[10]);
+                }
+
             }
             br.close();
         } catch(FileNotFoundException e){
@@ -227,6 +236,8 @@ public class Crawling {
         Crawling test = new Crawling();
         //텍스트 파일 읽기
         test.txtReader();
+        System.out.println(test.roadNameList);
+        System.out.println("총 "+test.roadNameList.size()+"개");
         
         //크롤링
 //        test.crawlMap("종암동");

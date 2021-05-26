@@ -181,6 +181,9 @@ public class Crawling {
             driver.switchTo().parentFrame(); //부모 프레임으로 이동
             driver.switchTo().frame("searchIframe"); //원래 iframe으로 이동
         }
+
+        //창 닫기
+        driver.close();
     }
 
     //db에 해시맵의 정보 업데이트
@@ -235,13 +238,23 @@ public class Crawling {
    public static void main(String[] args) throws InterruptedException {
         Crawling test = new Crawling();
         //텍스트 파일 읽기
-        test.txtReader();
-        System.out.println(test.roadNameList);
-        System.out.println("총 "+test.roadNameList.size()+"개");
-        
+//        test.txtReader();
+//        //정렬
+//        Collections.sort(test.roadNameList);
+//        System.out.println(test.roadNameList);
+//        System.out.println("총 "+test.roadNameList.size()+"개");
+
         //크롤링
-//        test.crawlMap("종암동");
-//        System.out.println(test.coffeeInfoms.get("스타벅스 종암DT점"));
+//       for(int i = 0; i < test.roadNameList.size(); i++){
+//           System.out.println(test.roadNameList.size() + " 중" + i + "번째");
+//           test.crawlMap(test.roadNameList.get(i));
+//           System.out.println(test.coffeeInfoms.size());
+//       }
+
+       test.crawlMap("종암로");
+//       System.out.println(test.coffeeInfoms.size());
+
+        System.out.println(test.coffeeInfoms.get("스타벅스 종암DT점"));
 
         //DB업데이트
 //        test.uploadDB();
